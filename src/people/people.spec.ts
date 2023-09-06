@@ -1,114 +1,69 @@
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { PeopleService } from './people.service';
-import { CommonModule } from '../common/common.module';
 import { Character, People } from './interfaces/people.interface';
-import { PeopleController } from './people.controller';
+import { AxiosAdapter } from '../common/adapters/axios.adapter';
+import {
+  CharacterMockedData,
+  PeopleMockedData,
+} from '../../test/mock/people.mock';
 import { PeopleModule } from './people.module';
+
 describe('PeopleService', () => {
-  let service: PeopleService;
-  let peopleController: PeopleController;
+  let peopleService: PeopleService;
+  let axiosAdapterMock: jest.Mocked<AxiosAdapter>;
+  let configServiceMock: jest.Mocked<ConfigService>;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [CommonModule],
+    axiosAdapterMock = {
+      get: jest.fn(),
+    } as unknown as jest.Mocked<AxiosAdapter>;
+
+    configServiceMock = {
+      get: jest.fn(),
+    } as unknown as jest.Mocked<ConfigService>;
+
+    const module: TestingModule = await Test.createTestingModule({
       providers: [
         PeopleService,
         {
+          provide: AxiosAdapter,
+          useValue: axiosAdapterMock,
+        },
+        {
           provide: ConfigService,
-          useValue: {
-            get: jest.fn(() => 'https://swapi.dev/api'),
-          },
+          useValue: configServiceMock,
         },
       ],
     }).compile();
 
-    service = moduleRef.get<PeopleService>(PeopleService);
-
-    peopleController = new PeopleController(service);
+    peopleService = module.get<PeopleService>(PeopleService);
   });
 
   describe('findAll', () => {
     it('should return a list of people', async () => {
-      const expectedData: People = {
-        count: 82,
-        next: 'https://swapi.dev/api/people/?page=2',
-        previous: null,
-        results: [
-          {
-            name: 'Luke Skywalker',
-            height: '172',
-            mass: '77',
-            hair_color: 'blond',
-            skin_color: 'fair',
-            eye_color: 'blue',
-            birth_year: '19BBY',
-            gender: 'male',
-            homeworld: 'https://swapi.dev/api/planets/1/',
-            films: [
-              'https://swapi.dev/api/films/1/',
-              'https://swapi.dev/api/films/2/',
-              'https://swapi.dev/api/films/3/',
-              'https://swapi.dev/api/films/6/',
-            ],
-            species: [],
-            vehicles: [
-              'https://swapi.dev/api/vehicles/14/',
-              'https://swapi.dev/api/vehicles/30/',
-            ],
-            starships: [
-              'https://swapi.dev/api/starships/12/',
-              'https://swapi.dev/api/starships/22/',
-            ],
-            created: '2014-12-09T13:50:51.644000Z',
-            edited: '2014-12-20T21:17:56.891000Z',
-            url: 'https://swapi.dev/api/people/1/',
-          },
-        ],
-      };
-      jest.spyOn(service, 'findAll').mockResolvedValue(expectedData);
+      const expectedData: People = PeopleMockedData;
+      axiosAdapterMock.get.mockResolvedValue(expectedData);
+      configServiceMock.get.mockReturnValue('swapi_url');
 
-      expect(await service.findAll()).toBe(expectedData);
+      const result = await peopleService.findAll();
+      expect(result).toEqual(expectedData);
+      expect(axiosAdapterMock.get).toHaveBeenCalledWith('swapi_url/people');
     });
   });
 
   describe('findOne', () => {
     it('should return a person', async () => {
-      const expectedData: Character = {
-        name: 'Luke Skywalker',
-        height: '172',
-        mass: '77',
-        hair_color: 'blond',
-        skin_color: 'fair',
-        eye_color: 'blue',
-        birth_year: '19BBY',
-        gender: 'male',
-        homeworld: 'https://swapi.dev/api/planets/1/',
-        films: [
-          'https://swapi.dev/api/films/1/',
-          'https://swapi.dev/api/films/2/',
-          'https://swapi.dev/api/films/3/',
-          'https://swapi.dev/api/films/6/',
-        ],
-        species: [],
-        vehicles: [
-          'https://swapi.dev/api/vehicles/14/',
-          'https://swapi.dev/api/vehicles/30/',
-        ],
-        starships: [
-          'https://swapi.dev/api/starships/12/',
-          'https://swapi.dev/api/starships/22/',
-        ],
-        created: '2014-12-09T13:50:51.644000Z',
-        edited: '2014-12-20T21:17:56.891000Z',
-        url: 'https://swapi.dev/api/people/1/',
-      };
+      const personId = '1';
+      const expectedData: Character = CharacterMockedData;
+      axiosAdapterMock.get.mockResolvedValue(expectedData);
+      configServiceMock.get.mockReturnValue('swapi_url');
 
-      jest.spyOn(service, 'findOne').mockResolvedValue(expectedData);
-
-      const result = await service.findOne('1');
-
+      const result = await peopleService.findOne(personId);
       expect(result).toEqual(expectedData);
+      expect(axiosAdapterMock.get).toHaveBeenCalledWith(
+        `swapi_url/people/${personId}`,
+      );
     });
   });
 });

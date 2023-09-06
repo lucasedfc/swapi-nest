@@ -1,101 +1,68 @@
 import { ConfigService } from '@nestjs/config';
-import { Test } from '@nestjs/testing';
-import { CommonModule } from '../common/common.module';
+import { Test, TestingModule } from '@nestjs/testing';
 import { Starship, Starships } from './interfaces/starships.interface';
 import { StarshipsService } from './starships.service';
 import { StarshipsModule } from './starships.module';
+import { AxiosAdapter } from '../common/adapters/axios.adapter';
+import {
+  starshipsMockedData,
+  StarshipMockedData,
+} from '../../test/mock/starships.mock';
 
 describe('StarshipsService', () => {
-  let service: StarshipsService;
+  let starshipsService: StarshipsService;
+  let axiosAdapterMock: jest.Mocked<AxiosAdapter>;
+  let configServiceMock: jest.Mocked<ConfigService>;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [CommonModule],
+    axiosAdapterMock = {
+      get: jest.fn(),
+    } as unknown as jest.Mocked<AxiosAdapter>;
+
+    configServiceMock = {
+      get: jest.fn(),
+    } as unknown as jest.Mocked<ConfigService>;
+
+    const module: TestingModule = await Test.createTestingModule({
       providers: [
         StarshipsService,
         {
+          provide: AxiosAdapter,
+          useValue: axiosAdapterMock,
+        },
+        {
           provide: ConfigService,
-          useValue: {
-            get: jest.fn(() => 'https://swapi.dev/api'),
-          },
+          useValue: configServiceMock,
         },
       ],
     }).compile();
 
-    service = moduleRef.get<StarshipsService>(StarshipsService);
+    starshipsService = module.get<StarshipsService>(StarshipsService);
   });
 
   describe('findAll', () => {
     it('should return a list of starships', async () => {
-      const expectedData: Starships = {
-        count: 36,
-        next: 'https://swapi.dev/api/starships/?page=2',
-        previous: null,
-        results: [
-          {
-            name: 'CR90 corvette',
-            model: 'CR90 corvette',
-            manufacturer: 'Corellian Engineering Corporation',
-            cost_in_credits: '3500000',
-            length: '150',
-            max_atmosphering_speed: '950',
-            crew: '30-165',
-            passengers: '600',
-            cargo_capacity: '3000000',
-            consumables: '1 year',
-            hyperdrive_rating: '2.0',
-            MGLT: '60',
-            starship_class: 'corvette',
-            pilots: [],
-            films: [
-              'https://swapi.dev/api/films/1/',
-              'https://swapi.dev/api/films/3/',
-              'https://swapi.dev/api/films/6/',
-            ],
-            created: '2014-12-10T14:20:33.369000Z',
-            edited: '2014-12-20T21:23:49.867000Z',
-            url: 'https://swapi.dev/api/starships/2/',
-          },
-        ],
-      };
+      const expectedData: Starships = starshipsMockedData;
+      axiosAdapterMock.get.mockResolvedValue(expectedData);
+      configServiceMock.get.mockReturnValue('swapi_url');
 
-      jest.spyOn(service, 'findAll').mockResolvedValue(expectedData);
-
-      const result = await service.findAll();
-
+      const result = await starshipsService.findAll();
       expect(result).toEqual(expectedData);
+      expect(axiosAdapterMock.get).toHaveBeenCalledWith('swapi_url/starships');
     });
   });
 
   describe('findOne', () => {
     it('should return a starship', async () => {
-      const expectedData: Starship = {
-        name: 'Death Star',
-        model: 'DS-1 Orbital Battle Station',
-        manufacturer:
-          'Imperial Department of Military Research, Sienar Fleet Systems',
-        cost_in_credits: '1000000000000',
-        length: '120000',
-        max_atmosphering_speed: 'n/a',
-        crew: '342,953',
-        passengers: '843,342',
-        cargo_capacity: '1000000000000',
-        consumables: '3 years',
-        hyperdrive_rating: '4.0',
-        MGLT: '10',
-        starship_class: 'Deep Space Mobile Battlestation',
-        pilots: [],
-        films: ['https://swapi.dev/api/films/1/'],
-        created: '2014-12-10T16:36:50.509000Z',
-        edited: '2014-12-20T21:26:24.783000Z',
-        url: 'https://swapi.dev/api/starships/9/',
-      };
+      const expectedData: Starship = StarshipMockedData;
+      axiosAdapterMock.get.mockResolvedValue(expectedData);
+      configServiceMock.get.mockReturnValue('swapi_url');
 
-      jest.spyOn(service, 'findOne').mockResolvedValue(expectedData);
-
-      const result = await service.findOne('9');
-
+      const result = await starshipsService.findOne('9');
       expect(result).toEqual(expectedData);
+      expect(axiosAdapterMock.get).toHaveBeenCalledWith(
+        'swapi_url/starships/9',
+      );
     });
   });
 
