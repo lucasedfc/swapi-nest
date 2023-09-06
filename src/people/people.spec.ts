@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { PeopleService } from './people.service';
 import { CommonModule } from '../common/common.module';
 import { Character, People } from './interfaces/people.interface';

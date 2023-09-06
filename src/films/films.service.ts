@@ -10,16 +10,12 @@ export class FilmsService {
     private readonly configService: ConfigService,
   ) {}
   async findAll(): Promise<Films> {
-    const data = this.http.get<Films>(
-      `${this.configService.get('SWAPI_URL')}/films`,
-    );
-    return data;
+    return this.http.get<Films>(`${this.configService.get('SWAPI_URL')}/films`);
   }
 
   findOne(id: string): Promise<Film> {
-    const data = this.http.get<Film>(
+    return this.http.get<Film>(
       `${this.configService.get('SWAPI_URL')}/films/${id}`,
     );
-    return data;
   }
 }

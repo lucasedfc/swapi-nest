@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { CommonModule } from '../common/common.module';
 import { PlanetsService } from './planets.service';
 import { Planet, Planets } from './interfaces/planets.interfaces';
+import { PlanetsModule } from './planets.module';
 
 describe('StarshipsService', () => {
   let service: PlanetsService;
@@ -99,6 +100,16 @@ describe('StarshipsService', () => {
       const result = await service.findOne('3');
 
       expect(result).toEqual(expectedData);
+    });
+  });
+
+  describe('PlanetsModule', () => {
+    it('should compile the module', async () => {
+      const module = await Test.createTestingModule({
+        imports: [PlanetsModule],
+      }).compile();
+
+      expect(module).toBeDefined();
     });
   });
 });
