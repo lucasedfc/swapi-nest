@@ -1,7 +1,7 @@
 import {
   Character,
   People,
-} from '../../dist/people/interfaces/people.interface';
+} from '../../src/people/interfaces/people.interface';
 
 export const PeopleMockedData: People = {
   count: 82,

@@ -1,7 +1,7 @@
 import {
-  Starship,
   Starships,
-} from '../../dist/startships/interfaces/starships.interface';
+  Starship,
+} from '../../src/startships/interfaces/starships.interface';
 
 export const starshipsMockedData: Starships = {
   count: 36,

@@ -1,7 +1,7 @@
 import {
   Planet,
   Planets,
-} from '../../dist/planets/interfaces/planets.interfaces';
+} from '../../src/planets/interfaces/planets.interfaces';
 
 export const PlanetsMockedData: Planets = {
   count: 60,
