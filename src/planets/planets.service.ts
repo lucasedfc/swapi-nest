@@ -17,10 +17,17 @@ export class PlanetsService {
     return data;
   }
 
-  findOne(id: string): Promise<Planet> {
-    const data = this.http.get<Planet>(
-      `${this.configService.get('SWAPI_URL')}/planets/${id}`,
+  async findOne(term: string): Promise<Planet> {
+    // if term is a number
+    if (!isNaN(Number(term))) {
+      console.log(term);
+      return this.http.get<Planet>(
+        `${this.configService.get('SWAPI_URL')}/planets/${term}`,
+      );
+    }
+    const search = await this.http.get<Planets>(
+      `${this.configService.get('SWAPI_URL')}/planets?search=${term}`,
     );
-    return data;
+    return search.results[0];
   }
 }

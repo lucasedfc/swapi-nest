@@ -16,10 +16,17 @@ export class StarshipsService {
     return data;
   }
 
-  findOne(id: string): Promise<Starship> {
-    const data = this.http.get<Starship>(
-      `${this.configService.get('SWAPI_URL')}/starships/${id}`,
+  async findOne(term: string): Promise<Starship> {
+    // if term is a number
+    if (!isNaN(Number(term))) {
+      console.log(term);
+      return this.http.get<Starship>(
+        `${this.configService.get('SWAPI_URL')}/starships/${term}`,
+      );
+    }
+    const search = await this.http.get<Starships>(
+      `${this.configService.get('SWAPI_URL')}/starships?search=${term}`,
     );
-    return data;
+    return search.results[0];
   }
 }

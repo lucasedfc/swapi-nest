@@ -13,9 +13,17 @@ export class FilmsService {
     return this.http.get<Films>(`${this.configService.get('SWAPI_URL')}/films`);
   }
 
-  findOne(id: string): Promise<Film> {
-    return this.http.get<Film>(
-      `${this.configService.get('SWAPI_URL')}/films/${id}`,
+  async findOne(term: string): Promise<Film> {
+    // if term is a number
+    if (!isNaN(Number(term))) {
+      console.log(term);
+      return this.http.get<Film>(
+        `${this.configService.get('SWAPI_URL')}/films/${term}`,
+      );
+    }
+    const search = await this.http.get<Films>(
+      `${this.configService.get('SWAPI_URL')}/films?search=${term}`,
     );
+    return search.results[0];
   }
 }

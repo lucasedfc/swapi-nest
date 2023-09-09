@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { StarshipsService } from './starships.service';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -12,8 +12,8 @@ export class StarshipsController {
     return this.startshipsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.startshipsService.findOne(id);
+  @Get(':term')
+  findOne(@Param('term') term: string) {
+    return this.startshipsService.findOne(term);
   }
 }

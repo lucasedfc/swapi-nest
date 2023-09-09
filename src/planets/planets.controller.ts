@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { PlanetsService } from './planets.service';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -12,8 +12,8 @@ export class PlanetsController {
     return this.planetsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.planetsService.findOne(id);
+  @Get(':term')
+  findOne(@Param('term') term: string) {
+    return this.planetsService.findOne(term);
   }
 }
