@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AxiosAdapter } from '../common/adapters/axios.adapter';
 import { Starships, Starship } from './interfaces/starships.interface';
@@ -16,17 +16,25 @@ export class StarshipsService {
     return data;
   }
 
-  async findOne(term: string): Promise<Starship> {
-    // if term is a number
-    if (!isNaN(Number(term))) {
-      console.log(term);
-      return this.http.get<Starship>(
-        `${this.configService.get('SWAPI_URL')}/starships/${term}`,
+  async findOne(searchTerm: string): Promise<Starship> {
+    const swapiUrl = this.configService.get('SWAPI_URL');
+
+    if (isNaN(Number(searchTerm))) {
+      const search = await this.http.get<Starships>(
+        `${swapiUrl}/starships?search=${searchTerm}`,
       );
+      if (!search.results[0]) {
+        throw new NotFoundException('Starship not found');
+      }
+      return search.results[0];
     }
-    const search = await this.http.get<Starships>(
-      `${this.configService.get('SWAPI_URL')}/starships?search=${term}`,
+
+    const res = await this.http.get<Starship>(
+      `${swapiUrl}/starships/${searchTerm}`,
     );
-    return search.results[0];
+    if (!res) {
+      throw new NotFoundException('Starship not found');
+    }
+    return res;
   }
 }

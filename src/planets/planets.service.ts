@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AxiosAdapter } from '../common/adapters/axios.adapter';
 import { Planet, Planets } from './interfaces/planets.interfaces';
@@ -18,16 +18,32 @@ export class PlanetsService {
   }
 
   async findOne(term: string): Promise<Planet> {
-    // if term is a number
     if (!isNaN(Number(term))) {
-      console.log(term);
-      return this.http.get<Planet>(
-        `${this.configService.get('SWAPI_URL')}/planets/${term}`,
-      );
+      const planetById = await this.fetchPlanetById(term);
+      return planetById;
     }
-    const search = await this.http.get<Planets>(
-      `${this.configService.get('SWAPI_URL')}/planets?search=${term}`,
-    );
-    return search.results[0];
+
+    const planetBySearch = await this.fetchPlanetBySearch(term);
+    if (!planetBySearch) {
+      throw new NotFoundException('Planet not found');
+    }
+
+    return planetBySearch;
+  }
+
+  private async fetchPlanetById(id: string): Promise<Planet> {
+    const url = `${this.configService.get('SWAPI_URL')}/planets/${id}`;
+    const planet = await this.http.get<Planet>(url);
+    return planet;
+  }
+
+  private async fetchPlanetBySearch(term: string): Promise<Planet> {
+    const url = `${this.configService.get('SWAPI_URL')}/planets?search=${term}`;
+    const searchResults = await this.http.get<Planets>(url);
+    if (!searchResults.results[0]) {
+      throw new NotFoundException('Planet not found');
+    }
+    const planet = searchResults.results[0];
+    return planet;
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { People } from './interfaces/people.interface';
 import { ConfigService } from '@nestjs/config';
 import { AxiosAdapter } from '../common/adapters/axios.adapter';
@@ -19,7 +19,27 @@ export class PeopleService {
     return data;
   }
 
-  async findOne(id: string) {
+  async findOne(term: string) {
+
+    try {
+      if (isNaN(Number(term))) {
+        const swapiUrl = this.configService.get('SWAPI_URL');
+        const search = await this.http.get<People>(
+          `${swapiUrl}/people?search=${term}`,
+        );
+        if (!search.results[0]) {
+          throw new NotFoundException('Character not found');
+        }
+        const id = search.results[0].url.match(/\d+/)[0];
+        return this.getCharacter(id);
+      }
+      return await this.getCharacter(term);
+    } catch (error) {
+      throw new NotFoundException('Character not found');
+    }
+  }
+
+  private async getCharacter(id: string) {
     const character = await swapi.people({ id: id });
     const homeWorld = await character.getHomeworld({ id: character.homeworld });
     character.homeworld = homeWorld.name;
@@ -40,7 +60,7 @@ export class PeopleService {
     const _character_starships = this.getStarships(character_starships);
     character.starships = _character_starships;
 
-    return character;
+    return character ?? new NotFoundException('Character not found');
   }
 
   private getSpecies(species: any[]) {

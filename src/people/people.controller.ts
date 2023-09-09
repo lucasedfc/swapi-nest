@@ -12,8 +12,8 @@ export class PeopleController {
     return this.peopleService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.peopleService.findOne(id);
+  @Get(':term')
+  findOne(@Param('term') term: string) {
+    return this.peopleService.findOne(term);
   }
 }
