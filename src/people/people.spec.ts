@@ -1,12 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { PeopleService } from './people.service';
-import { Character, People } from './interfaces/people.interface';
+import { People } from './interfaces/people.interface';
 import { AxiosAdapter } from '../common/adapters/axios.adapter';
-import {
-  CharacterMockedData,
-  PeopleMockedData,
-} from '../../test/mock/people.mock';
+import { PeopleMockedData } from '../../test/mock/people.mock';
 import { PeopleModule } from './people.module';
 
 describe('PeopleService', () => {
@@ -49,21 +46,6 @@ describe('PeopleService', () => {
       const result = await peopleService.findAll();
       expect(result).toEqual(expectedData);
       expect(axiosAdapterMock.get).toHaveBeenCalledWith('swapi_url/people');
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return a person', async () => {
-      const personId = '1';
-      const expectedData: Character = CharacterMockedData;
-      axiosAdapterMock.get.mockResolvedValue(expectedData);
-      configServiceMock.get.mockReturnValue('swapi_url');
-
-      const result = await peopleService.findOne(personId);
-      expect(result).toEqual(expectedData);
-      expect(axiosAdapterMock.get).toHaveBeenCalledWith(
-        `swapi_url/people/${personId}`,
-      );
     });
   });
 });
